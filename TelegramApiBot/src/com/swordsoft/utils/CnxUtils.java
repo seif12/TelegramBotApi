@@ -50,26 +50,51 @@ public static StringBuilder getHttpsContent(String https_url) {
 	}
 
 
-   public static StringBuilder initiatePost(String url , String document, Map<String,String> urlParameters )
+   public static StringBuilder initiatePost(String url , String document, Map<String,String> urlParameters, boolean wproxy )
    {
+	   StringBuffer response = new StringBuffer();
+	   HttpsURLConnection con ;
+	    String strUtlParameters ="" ;	
+	    StringBuilder res = new StringBuilder();
+	    Proxy proxy = null;
+	    if(wproxy)
+	    {
+			 proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(
+					ip_address, port));
+	    }
 	   try {
-		URL obj = new URL(url);
-		
-		Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(
-				ip_address, port));
 		
 		
-			HttpsURLConnection con = (HttpsURLConnection) obj.openConnection(proxy);
+		   URL obj = new URL(url);
+		   if(wproxy)
+		   {
+			    con = (HttpsURLConnection) obj.openConnection(proxy);
+		   }
+		   else
+		   {
+			    con = (HttpsURLConnection) obj.openConnection();
+		   }
 			
 			con.setRequestMethod("POST");
 			con.setRequestProperty("User-Agent","Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36");
 			con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
 
-
+			for(String key : urlParameters.keySet())
+			{
+				if(strUtlParameters.length()>1)
+				{
+					strUtlParameters = strUtlParameters + "&" + key+"=" + urlParameters.get(key);
+				}
+				else
+				{
+					strUtlParameters =  key+"=" + urlParameters.get(key);
+				}
+			}
+			
 			// Send post request
 			con.setDoOutput(true);
 			DataOutputStream wr = new DataOutputStream(con.getOutputStream());
-			wr.writeBytes(urlParameters.toString());
+			wr.writeBytes(strUtlParameters);
 			wr.flush();
 			wr.close();
 
@@ -78,7 +103,7 @@ public static StringBuilder getHttpsContent(String https_url) {
 			BufferedReader in = new BufferedReader(
 			        new InputStreamReader(con.getInputStream()));
 			String inputLine;
-			StringBuffer response = new StringBuffer();
+			
 
 			while ((inputLine = in.readLine()) != null) {
 				response.append(inputLine);
@@ -92,7 +117,7 @@ public static StringBuilder getHttpsContent(String https_url) {
 			e.printStackTrace();
 		}
 	   
-	   return null;
+	   return res.append(response.toString());
    }
 
 

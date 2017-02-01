@@ -17,6 +17,6 @@
   </servlet>
   <servlet-mapping>
     <servlet-name>WebHookTelegramApi</servlet-name>
-    <url-pattern>/320997687:AAEFMyZEhUso49cHojFndUnw3qtY3LnFwZA</url-pattern>
+    <url-pattern>/AAEFMyZEhUso49cHojFndUnw3qtY3LnFwZA</url-pattern>
   </servlet-mapping>
 </web-app>
