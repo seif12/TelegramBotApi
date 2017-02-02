@@ -91,13 +91,15 @@ public class WebHookTelegramApi extends HttpServlet {
 				String line = "";
 				
 				PreparedStatement ps = con.prepareStatement("insert into log_table(log_text) values(?)" );
-				
-				do
+				if(request.getReader().ready())
 				{
-					 request.getReader().readLine();
-					update = update+(line!=null?line:"");
+					
+					while((line = request.getReader().readLine()) != null);
+					{
+						line=request.getReader().readLine();
+						update = update+(line!=null?line:"");
+					}
 				}
-				while(line != null);
 				ps.setString(1, "Post Request " +update );
 				ps.executeUpdate();
 				ps.close();
