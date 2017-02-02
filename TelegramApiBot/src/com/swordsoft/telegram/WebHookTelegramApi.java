@@ -23,6 +23,8 @@ import javax.sql.DataSource;
 import com.mysql.jdbc.Connection;
 import com.swordsoft.utils.CnxUtils;
 
+import sun.misc.IOUtils;
+
 
 public class WebHookTelegramApi extends HttpServlet {
 	private static final long serialVersionUID = 1L;
@@ -91,15 +93,10 @@ public class WebHookTelegramApi extends HttpServlet {
 				String line = "";
 				
 				PreparedStatement ps = con.prepareStatement("insert into log_table(log_text) values(?)" );
-				if(request.getReader().ready())
-				{
+			
 					
-					while((line = request.getReader().readLine()) != null);
-					{
-						line=request.getReader().readLine();
-						update = update+(line!=null?line:"");
-					}
-				}
+				update = org.apache.commons.io.IOUtils.toString(request.getInputStream());
+				
 				ps.setString(1, "Post Request " +update );
 				ps.executeUpdate();
 				ps.close();
