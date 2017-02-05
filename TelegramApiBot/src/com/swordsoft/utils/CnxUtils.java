@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.Authenticator;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
@@ -11,10 +12,15 @@ import java.net.PasswordAuthentication;
 import java.net.Proxy;
 import java.net.URL;
 import java.security.cert.Certificate;
+import java.sql.PreparedStatement;
 import java.util.Map;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLPeerUnverifiedException;
+import javax.sql.DataSource;
 
 public class CnxUtils {
 
@@ -22,6 +28,7 @@ public class CnxUtils {
 	final static String authPassword = "KeepGoing";
 	final static String ip_address = "192.168.73.200";
 	final static int port = 8080;
+	private static DataSource ds;
 	
 public static StringBuilder getHttpsContent(String https_url) {
 		URL url;
@@ -50,12 +57,14 @@ public static StringBuilder getHttpsContent(String https_url) {
 	}
 
 
-   public static StringBuilder initiatePost(String url , String document, Map<String,String> urlParameters, boolean wproxy )
+   public static StringBuilder initiatePost(String url , String document, Map<String,String> urlParameters,String type, boolean wproxy )
    {
 	   StringBuffer response = new StringBuffer();
 	   HttpsURLConnection con ;
 	    String strUtlParameters ="" ;	
 	    StringBuilder res = new StringBuilder();
+
+		
 	    Proxy proxy = null;
 	    if(wproxy)
 	    {
@@ -78,7 +87,11 @@ public static StringBuilder getHttpsContent(String https_url) {
 			con.setRequestMethod("POST");
 			con.setRequestProperty("User-Agent","Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36");
 			con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
-
+			if(type.equals("json"))
+			{
+				con.setRequestProperty("Content-Type", "application/json");
+			}
+			
 			for(String key : urlParameters.keySet())
 			{
 				if(strUtlParameters.length()>1)
@@ -95,6 +108,7 @@ public static StringBuilder getHttpsContent(String https_url) {
 			con.setDoOutput(true);
 			DataOutputStream wr = new DataOutputStream(con.getOutputStream());
 			wr.writeBytes(strUtlParameters);
+			wr.writeBytes(document);
 			wr.flush();
 			wr.close();
 
@@ -109,12 +123,14 @@ public static StringBuilder getHttpsContent(String https_url) {
 				response.append(inputLine);
 			}
 			in.close();
-
+			
+			
 			//print result
 			System.out.println(response.toString());
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (Exception e) {
+			
+			response.append( e.getMessage());
+		
 		}
 	   
 	   return res.append(response.toString());

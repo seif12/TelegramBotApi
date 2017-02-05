@@ -20,7 +20,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.mysql.jdbc.Connection;
+import com.swordsoft.telegram.entity.Message;
+import com.swordsoft.telegram.entity.ResponseMessage;
+import com.swordsoft.telegram.entity.Update;
 import com.swordsoft.utils.CnxUtils;
 
 import sun.misc.IOUtils;
@@ -71,7 +76,7 @@ public class WebHookTelegramApi extends HttpServlet {
 		
 		params.put("url","https://telegram-seif12.rhcloud.com/AAEFMyZEhUso49cHojFndUnw3qtY3LnFwZA");
 		
-		String resp =CnxUtils.initiatePost("https://api.telegram.org/bot320997687:AAEFMyZEhUso49cHojFndUnw3qtY3LnFwZA/setWebhook","" , params, false).toString();
+		String resp =CnxUtils.initiatePost("https://api.telegram.org/bot320997687:AAEFMyZEhUso49cHojFndUnw3qtY3LnFwZA/setWebhook","" , params,"", false).toString();
 		
 		System.out.println(resp);
 		
@@ -93,12 +98,28 @@ public class WebHookTelegramApi extends HttpServlet {
 				String line = "";
 				
 				PreparedStatement ps = con.prepareStatement("insert into log_table(log_text) values(?)" );
-			
-					
-				update = org.apache.commons.io.IOUtils.toString(request.getInputStream());
 				
-				ps.setString(1, "Post Request " +update );
+				update = org.apache.commons.io.IOUtils.toString(request.getInputStream());
+				ps.setString(1, "Post Request " + update );
 				ps.executeUpdate();
+			
+				Gson gson = new Gson();
+				Update msg = gson.fromJson(update, Update.class);
+				
+				
+				ResponseMessage respMsg = new ResponseMessage();
+				respMsg.setChatId(msg.getMessage().getChat().getId());
+				respMsg.setText("Reply to "+msg.getMessage().getText());
+				respMsg.setReplyToMessageId(msg.getMessage().getMessageId());
+				String reply = gson.toJson(respMsg);
+				ps.setString(1, "Post Reply "+reply);
+				ps.executeUpdate();
+			
+				Map<String,String> params = new HashMap<String,String>();
+				String resp =CnxUtils.initiatePost("https://api.telegram.org/bot320997687:AAEFMyZEhUso49cHojFndUnw3qtY3LnFwZA/sendMessage", reply, params,"json", false).toString();
+				ps.setString(1, "Msg Reply "+resp);
+				ps.executeUpdate();
+				
 				ps.close();
 				con.close();
 				

@@ -40,7 +40,7 @@ public class GetUpdates extends TimerTask {
 	
 	params.put("limit","20");
 	
-	String resp =CnxUtils.initiatePost("https://api.telegram.org/bot320997687:AAEFMyZEhUso49cHojFndUnw3qtY3LnFwZA/getUpdates","" , params, false).toString();
+	String resp =CnxUtils.initiatePost("https://api.telegram.org/bot320997687:AAEFMyZEhUso49cHojFndUnw3qtY3LnFwZA/getUpdates","" , params, "",false).toString();
 	
 	System.out.println(resp);
 	
